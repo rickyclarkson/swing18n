@@ -3,7 +3,9 @@ package swing18n;
 import javax.swing.JFrame;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
+import java.io.IOException;
 import java.util.Locale;
+import java.util.Properties;
 import java.util.ResourceBundle;
 
 public class Swing18n {
@@ -16,10 +18,20 @@ public class Swing18n {
         final JTextArea area = new JTextArea(40, 80);
         if (!locale.equals(Locale.ENGLISH))
             for (Class<?> clazz: classes) {
-                final ResourceBundle localised = ResourceBundle.getBundle(clazz.getName(), locale);
-                final ResourceBundle english = ResourceBundle.getBundle(clazz.getName(), Locale.ENGLISH);
-                for (String key: english.keySet())
-                    if (localised.getString(key).equals(english.getString(key)))
+                final Properties english = new Properties();
+                final Properties foreign = new Properties();
+
+                try {
+                    english.load(clazz.getResource(clazz.getSimpleName() + ".properties").openStream());
+                    final String foreignName = clazz.getSimpleName() + '_' + locale.getLanguage() + ".properties";
+                    System.err.println(foreignName);
+                    foreign.load(clazz.getResource(foreignName).openStream());
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
+
+                for (Object key: english.keySet())
+                    if (!foreign.containsKey(key))
                         area.setText(area.getText() + clazz + '.' + key + " has no translation into " + locale + '\n');
             }
         frame.add(new JScrollPane(area));
