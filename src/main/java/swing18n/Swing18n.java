@@ -14,18 +14,20 @@ import java.awt.datatransfer.StringSelection;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.IOException;
+import java.net.URL;
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.ResourceBundle;
 
 public class Swing18n {
-    ResourceBundle actualResources = ResourceBundle.getBundle(Swing18n.class.getName());
-    String internationalisingXX = actualResources.getString("InternationalisingXX");
-    String copyToClipboardText = actualResources.getString("CopyToClipboard");
-    String theTranslationsHaveBeenCopiedToTheClipboardPleaseEmailToXX = actualResources.getString("TheTranslationsHaveBeenCopiedToTheClipboardPleaseEmailToXX");
-    JFrame frame;
+    private static final ResourceBundle actualResources = ResourceBundle.getBundle(Swing18n.class.getName());
+    private static final String internationalisingXX = actualResources.getString("InternationalisingXX");
+    private static final String copyToClipboardText = actualResources.getString("CopyToClipboard");
+    private static final String theTranslationsHaveBeenCopiedToTheClipboardPleaseEmailToXX = actualResources.getString("TheTranslationsHaveBeenCopiedToTheClipboardPleaseEmailToXX");
+    public final JFrame frame;
 
     public Swing18n(String appName, final Locale locale, final String email, Class<?>... classes) {
         frame = new JFrame(String.format(internationalisingXX, appName));
@@ -44,7 +46,9 @@ public class Swing18n {
             try {
                 english.load(clazz.getResource(clazz.getSimpleName() + ".properties").openStream());
                 final String foreignName = clazz.getSimpleName() + '_' + locale.getLanguage() + ".properties";
-                foreign.load(clazz.getResource(foreignName).openStream());
+                final URL foreignResource = clazz.getResource(foreignName);
+                if (foreignResource != null)
+                    foreign.load(foreignResource.openStream());
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
@@ -63,10 +67,10 @@ public class Swing18n {
             public void actionPerformed(ActionEvent event) {
                 final StringBuilder builder = new StringBuilder();
                 builder.append(locale.getDisplayLanguage()).append(" (").append(locale.getLanguage()).append(")\n");
-                for (String classNameAndKey: edits.keySet()) {
-                    final String value = edits.get(classNameAndKey).getText();
+                for (Entry<String, JTextField> entry: edits.entrySet()) {
+                    final String value = entry.getValue().getText();
                     if (!value.isEmpty())
-                        builder.append(classNameAndKey).append(' ').append(value).append('\n');
+                        builder.append(entry.getKey()).append(' ').append(value).append('\n');
                 }
                 Toolkit.getDefaultToolkit().getSystemClipboard().setContents(new StringSelection(builder.toString()), null);
                 JOptionPane.showMessageDialog(frame, String.format(theTranslationsHaveBeenCopiedToTheClipboardPleaseEmailToXX, email));
