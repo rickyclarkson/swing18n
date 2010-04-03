@@ -16,8 +16,10 @@ import java.awt.event.ActionListener;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -25,11 +27,12 @@ import java.util.Properties;
 import java.util.ResourceBundle;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
+import java.util.regex.Pattern;
 
 public class Swing18n {
     private static final ResourceBundle actualResources = ResourceBundle.getBundle(Swing18n.class.getName());
     private static final String internationalisingXX = actualResources.getString("InternationalisingXX");
-    private static final String copyToClipboardText = actualResources.getString("CopyToClipboard");
+    private static final String done = actualResources.getString("Done");
     private static final String theTranslationsHaveBeenCopiedToTheClipboardPleaseEmailToXX = actualResources.getString("TheTranslationsHaveBeenCopiedToTheClipboardPleaseEmailToXX");
     public final JFrame frame;
 
@@ -66,7 +69,7 @@ public class Swing18n {
                 }
         }
         frame.add(new JScrollPane(panel));
-        final JButton copyToClipboard = new JButton(copyToClipboardText);
+        final JButton copyToClipboard = new JButton(done);
         copyToClipboard.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent event) {
                 final StringBuilder builder = new StringBuilder();
@@ -84,32 +87,57 @@ public class Swing18n {
         frame.pack();
     }
 
-    public static void main(String[] args) throws IOException {
-        String[] classPath = System.getProperty("java.class.path").split(";");
-        for (String cp: classPath) {
-            File file = new File(cp);
-            if (file.isDirectory()) {
+    public static List<Class<?>> classesWithPropertyFiles(final String packageName) {
+        final List<Class<?>> classes = new ArrayList<Class<?>>();
+        final String[] classPath = System.getProperty("java.class.path").split(";");
+        for (String cp : classPath) {
+            final File outerFile = new File(cp);
+            if (outerFile.isDirectory()) {
                 new Object() {
                     void recurse(File file) {
-                        for (File f: file.listFiles())
+                        for (File f : file.listFiles())
                             if (f.isDirectory())
                                 recurse(f);
-                            else
-                                System.out.println(f);
+                            else {
+                                if (f.getAbsolutePath().startsWith(outerFile.getAbsolutePath() + File.separator + packageName.replaceAll("\\.", File.separator))) {
+                                    if (f.getName().endsWith(".properties")) {
+                                        final String fullPathMinusDotClass = f.getAbsolutePath().substring(0, f.getAbsolutePath().length() - ".properties".length());
+                                        final String pathMinusAbsoluteParts = fullPathMinusDotClass.substring(outerFile.getAbsolutePath().length() + 1);
+                                        try {
+                                            classes.add(Class.forName(pathMinusAbsoluteParts.replaceAll(Pattern.quote(File.separator), ".")));
+                                        } catch (ClassNotFoundException e) {
+                                            throw new RuntimeException(e);
+                                        }
+                                    }
+                                }
+                            }
                     }
-                }.recurse(file);
-            }
-            else {
-                JarFile jarFile = new JarFile(file);
-                Enumeration<JarEntry> enumeration = jarFile.entries();
+                }.recurse(outerFile);
+            } else {
+                final JarFile jarFile;
+                try {
+                    jarFile = new JarFile(outerFile);
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
+                final Enumeration<JarEntry> enumeration = jarFile.entries();
                 while (enumeration.hasMoreElements()) {
-                    JarEntry entry = enumeration.nextElement();
-                    System.out.println(entry.getName());
+                    final JarEntry entry = enumeration.nextElement();
+                    if (entry.getName().endsWith(".properties") && entry.getName().startsWith(packageName.replaceAll("/", ".")))
+                        try {
+                            classes.add(Class.forName(entry.getName().substring(0, entry.getName().length() - ".properties".length())));
+                        } catch (ClassNotFoundException e) {
+                            throw new RuntimeException(e);
+                        }
                 }
             }
         }
-        
-        final Swing18n i18n = new Swing18n("Swing18n", new Locale("es", "ES", "es"), "ricky.clarkson@gmail.com", Swing18n.class);
+        return classes;
+    }
+
+    public static void main(String[] args) {
+        final List<Class<?>> classes = classesWithPropertyFiles("swing18n");
+        final Swing18n i18n = new Swing18n("Swing18n", new Locale("es", "ES", "es"), "ricky.clarkson@gmail.com", classes.toArray(new Class<?>[classes.size()]));
         i18n.frame.setVisible(true);
         i18n.frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
     }
