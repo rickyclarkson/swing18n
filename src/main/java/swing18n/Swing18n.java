@@ -1,6 +1,5 @@
 package swing18n;
 
-import javax.swing.BoxLayout;
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
@@ -9,6 +8,7 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextField;
 import java.awt.BorderLayout;
+import java.awt.GridLayout;
 import java.awt.Toolkit;
 import java.awt.datatransfer.StringSelection;
 import java.awt.event.ActionEvent;
@@ -23,17 +23,16 @@ import java.util.ResourceBundle;
 public class Swing18n {
     ResourceBundle actualResources = ResourceBundle.getBundle(Swing18n.class.getName());
     String internationalisingXX = actualResources.getString("InternationalisingXX");
-    String inEnglishXX = actualResources.getString("InEnglishXX");
     String copyToClipboardText = actualResources.getString("CopyToClipboard");
-    String translationsForXX = actualResources.getString("TranslationsForXX");
     String theTranslationsHaveBeenCopiedToTheClipboardPleaseEmailToXX = actualResources.getString("TheTranslationsHaveBeenCopiedToTheClipboardPleaseEmailToXX");
     JFrame frame;
 
     public Swing18n(String appName, final Locale locale, final String email, Class<?>... classes) {
         frame = new JFrame(String.format(internationalisingXX, appName));
         final JPanel panel = new JPanel();
-        panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
-
+        panel.setLayout(new GridLayout(0, 2));
+        panel.add(new JLabel(Locale.ENGLISH.getDisplayLanguage()));
+        panel.add(new JLabel(locale.getDisplayLanguage()));
         if (locale.equals(Locale.ENGLISH))
             throw new IllegalArgumentException("Not valid for English");
 
@@ -52,13 +51,10 @@ public class Swing18n {
 
             for (Object key: english.keySet())
                 if (!foreign.containsKey(key)) {
-                    final JPanel line = new JPanel();
-                    line.add(new JLabel(key + " in " + locale.getDisplayLanguage() + ": "));
+                    panel.add(new JLabel(english.getProperty(key.toString())));
                     final JTextField field = new JTextField(20);
-                    line.add(field);
+                    panel.add(field);
                     edits.put(clazz + " " + key, field);
-                    line.add(new JLabel('(' + String.format(inEnglishXX, english.getProperty(key.toString())) + ')'));
-                    panel.add(line);
                 }
         }
         frame.add(new JScrollPane(panel));
@@ -66,7 +62,7 @@ public class Swing18n {
         copyToClipboard.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent event) {
                 final StringBuilder builder = new StringBuilder();
-                builder.append(String.format(translationsForXX, locale.getDisplayLanguage())).append(" (").append(locale.getLanguage()).append(")\n");
+                builder.append(locale.getDisplayLanguage()).append(" (").append(locale.getLanguage()).append(")\n");
                 for (String classNameAndKey: edits.keySet()) {
                     final String value = edits.get(classNameAndKey).getText();
                     if (!value.isEmpty())
