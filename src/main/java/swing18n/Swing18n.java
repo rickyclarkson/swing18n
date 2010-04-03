@@ -13,14 +13,18 @@ import java.awt.Toolkit;
 import java.awt.datatransfer.StringSelection;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.File;
 import java.io.IOException;
 import java.net.URL;
+import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.ResourceBundle;
+import java.util.jar.JarEntry;
+import java.util.jar.JarFile;
 
 public class Swing18n {
     private static final ResourceBundle actualResources = ResourceBundle.getBundle(Swing18n.class.getName());
@@ -80,7 +84,31 @@ public class Swing18n {
         frame.pack();
     }
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws IOException {
+        String[] classPath = System.getProperty("java.class.path").split(";");
+        for (String cp: classPath) {
+            File file = new File(cp);
+            if (file.isDirectory()) {
+                new Object() {
+                    void recurse(File file) {
+                        for (File f: file.listFiles())
+                            if (f.isDirectory())
+                                recurse(f);
+                            else
+                                System.out.println(f);
+                    }
+                }.recurse(file);
+            }
+            else {
+                JarFile jarFile = new JarFile(file);
+                Enumeration<JarEntry> enumeration = jarFile.entries();
+                while (enumeration.hasMoreElements()) {
+                    JarEntry entry = enumeration.nextElement();
+                    System.out.println(entry.getName());
+                }
+            }
+        }
+        
         final Swing18n i18n = new Swing18n("Swing18n", new Locale("es", "ES", "es"), "ricky.clarkson@gmail.com", Swing18n.class);
         i18n.frame.setVisible(true);
         i18n.frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
