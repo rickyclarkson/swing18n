@@ -4,7 +4,7 @@
     <groupId>org.rickyclarkson</groupId>
     <packaging>jar</packaging>
     <name>swing18n</name>
-    <version>1.0-SNAPSHOT</version>
+    <version>1.0</version>
     <scm>
         <connection>scm:git:ssh://rickyclarkson@github.com/rickyclarkson/swing18n</connection>
         <developerConnection>scm:git:ssh://rickyclarkson@github.com/rickyclarkson/swing18n</developerConnection>
