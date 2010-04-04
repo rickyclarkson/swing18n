@@ -7,8 +7,11 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextField;
-import java.awt.BorderLayout;
+import javax.swing.SwingConstants;
+import java.awt.Color;
+import java.awt.Dimension;
 import java.awt.GridLayout;
+import java.awt.Insets;
 import java.awt.Toolkit;
 import java.awt.datatransfer.StringSelection;
 import java.awt.event.ActionEvent;
@@ -35,18 +38,27 @@ public class Swing18n {
     private static final String internationalisingXX = actualResources.getString("InternationalisingXX");
     private static final String done = actualResources.getString("Done");
     private static final String theTranslationsHaveBeenCopiedToTheClipboardPleaseEmailToXX = actualResources.getString("TheTranslationsHaveBeenCopiedToTheClipboardPleaseEmailToXX");
+    private static final String enterTheTranslationsForTheEnglishTextOnTheLeftInTheCorrespondingBoxesOnTheRight = actualResources.getString("EnterTheTranslationsForTheEnglishTextOnTheLeftInTheCorrespondingBoxesOnTheRight");
+    private static final String leaveAnyUnknownTranslationsBlank = actualResources.getString("LeaveAnyUnknownTranslationsBlank");
+    
     public final JFrame frame;
 
     public Swing18n(String appName, final Locale locale, final String email, Class<?>... classes) {
         frame = new JFrame(String.format(internationalisingXX, appName));
         final JPanel panel = new JPanel();
         panel.setLayout(new GridLayout(0, 2));
-        panel.add(new JLabel(Locale.ENGLISH.getDisplayLanguage()));
-        panel.add(new JLabel(locale.getDisplayLanguage() + " (" + locale.toString() + ')'));
+        panel.add(new JLabel(enterTheTranslationsForTheEnglishTextOnTheLeftInTheCorrespondingBoxesOnTheRight, SwingConstants.CENTER));
+        panel.add(new JLabel(leaveAnyUnknownTranslationsBlank, SwingConstants.CENTER));
+        panel.add(new JLabel(Locale.ENGLISH.getDisplayLanguage(), SwingConstants.CENTER));
+        panel.add(new JLabel(locale.getDisplayLanguage() + " (" + locale.toString() + ')', SwingConstants.CENTER));
         if (locale.equals(Locale.ENGLISH))
             throw new IllegalArgumentException("Not valid for English");
 
         final Map<String, JTextField> edits = new HashMap<String, JTextField>();
+        final Color color1 = Color.white;
+        final Color color2 = new Color(220, 220, 240);
+        Color color = color1;
+
         for (Class<?> clazz: classes) {
             final Properties english = new Properties();
             final Properties foreign = new Properties();
@@ -63,14 +75,20 @@ public class Swing18n {
 
             for (Object key: english.keySet())
                 if (!foreign.containsKey(key)) {
-                    panel.add(new JLabel(english.getProperty(key.toString())));
+                    final JLabel englishLabel = new JLabel("       " + english.getProperty(key.toString()));
+                    englishLabel.setOpaque(true);
+                    englishLabel.setBackground(color);
+                    panel.add(englishLabel);
                     final JTextField field = new JTextField(20);
+                    field.setBackground(color);
+                    color = color.equals(color1) ? color2 : color1;
                     panel.add(field);
                     edits.put(clazz + " " + key, field);
                 }
         }
-        frame.add(new JScrollPane(panel));
         final JButton copyToClipboard = new JButton(done);
+        panel.add(copyToClipboard);
+        frame.add(new JScrollPane(panel));
         copyToClipboard.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent event) {
                 final StringBuilder builder = new StringBuilder();
@@ -84,8 +102,14 @@ public class Swing18n {
                 JOptionPane.showMessageDialog(frame, String.format(theTranslationsHaveBeenCopiedToTheClipboardPleaseEmailToXX, email));
             }
         });
-        frame.add(copyToClipboard, BorderLayout.SOUTH);
+        final Toolkit toolkit = Toolkit.getDefaultToolkit();
+        final Dimension screenSize = toolkit.getScreenSize();
+        final Insets screenInsets = toolkit.getScreenInsets(frame.getGraphicsConfiguration());
+        if (panel.getPreferredSize().width > screenSize.getWidth() - screenInsets.left - screenInsets.right)
+            panel.setPreferredSize(new Dimension((int) (screenSize.getWidth() - screenInsets.left - screenInsets.right), panel.getPreferredSize().height));
         frame.pack();
+        if (frame.getHeight() > screenSize.height - screenInsets.bottom - screenInsets.top || frame.getWidth() > screenSize.width - screenInsets.left - screenInsets.right)
+            frame.setExtendedState(JFrame.MAXIMIZED_BOTH);
     }
 
     public static List<Class<?>> classesWithPropertyFiles(final String packageName) {
