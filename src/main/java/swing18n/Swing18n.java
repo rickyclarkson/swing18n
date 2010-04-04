@@ -83,7 +83,7 @@ public class Swing18n {
                     field.setBackground(color);
                     color = color.equals(color1) ? color2 : color1;
                     panel.add(field);
-                    edits.put(clazz + " " + key, field);
+                    edits.put(clazz.getName() + " " + key, field);
                 }
         }
         final JButton copyToClipboard = new JButton(done);
