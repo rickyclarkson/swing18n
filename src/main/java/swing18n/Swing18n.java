@@ -27,6 +27,7 @@ import java.util.Properties;
 import java.util.ResourceBundle;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class Swing18n {
@@ -41,7 +42,7 @@ public class Swing18n {
         final JPanel panel = new JPanel();
         panel.setLayout(new GridLayout(0, 2));
         panel.add(new JLabel(Locale.ENGLISH.getDisplayLanguage()));
-        panel.add(new JLabel(locale.getDisplayLanguage()));
+        panel.add(new JLabel(locale.getDisplayLanguage() + " (" + locale.toString() + ')'));
         if (locale.equals(Locale.ENGLISH))
             throw new IllegalArgumentException("Not valid for English");
 
@@ -99,14 +100,13 @@ public class Swing18n {
                             if (f.isDirectory())
                                 recurse(f);
                             else {
-                                if (f.getAbsolutePath().startsWith(outerFile.getAbsolutePath() + File.separator + packageName.replaceAll("\\.", File.separator))) {
+                                if (f.getAbsolutePath().startsWith(outerFile.getAbsolutePath() + File.separator + packageName.replaceAll("\\.", Matcher.quoteReplacement(File.separator)))) {
                                     if (f.getName().endsWith(".properties")) {
                                         final String fullPathMinusDotClass = f.getAbsolutePath().substring(0, f.getAbsolutePath().length() - ".properties".length());
                                         final String pathMinusAbsoluteParts = fullPathMinusDotClass.substring(outerFile.getAbsolutePath().length() + 1);
                                         try {
                                             classes.add(Class.forName(pathMinusAbsoluteParts.replaceAll(Pattern.quote(File.separator), ".")));
                                         } catch (ClassNotFoundException e) {
-                                            throw new RuntimeException(e);
                                         }
                                     }
                                 }
