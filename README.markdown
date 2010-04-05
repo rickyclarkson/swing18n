@@ -4,4 +4,4 @@ It is under the BSD licence.  Please don't hesitate to email ricky.clarkson@gmai
 
 See Swing18n's main method for an example of usage.  Here's a screenshot of Swing18n being used to allow a Spanish speaker to provide Spanish translations:
 
-![Screenshot](swing18n/swing18n.png)
+![Screenshot](swing18n/blob/master/swing18n.png)
