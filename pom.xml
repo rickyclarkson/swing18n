@@ -23,5 +23,21 @@
                 </configuration>
             </plugin>
         </plugins>
-    </build> 
+    </build>
+    <distributionManagement>
+        <repository>
+            <id>internal</id>
+            <name>Archiva Managed Internal Repository</name>
+            <url>
+                dav:http://192.168.106.29:8080/archiva/repository/internal
+            </url>
+        </repository>
+        <snapshotRepository>
+            <id>snapshots</id>
+            <name>Archiva Managed Snapshot Repository</name>
+            <url>
+                dav:http://192.168.106.29:8080/archiva/repository/snapshots
+            </url>
+        </snapshotRepository>
+    </distributionManagement>
 </project>
