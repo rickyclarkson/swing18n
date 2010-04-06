@@ -83,13 +83,14 @@ public class Swing18n {
                     field.setBackground(color);
                     color = color.equals(color1) ? color2 : color1;
                     panel.add(field);
-                    edits.put(clazz.getName() + " " + key, field);
+                    edits.put(clazz.getName() + ' ' + key, field);
                 }
         }
         final JButton copyToClipboard = new JButton(done);
         panel.add(copyToClipboard);
         frame.add(new JScrollPane(panel));
         copyToClipboard.addActionListener(new ActionListener() {
+            @Override
             public void actionPerformed(ActionEvent event) {
                 final StringBuilder builder = new StringBuilder();
                 builder.append(locale.getDisplayLanguage()).append(" (").append(locale.getLanguage()).append(")\n");
