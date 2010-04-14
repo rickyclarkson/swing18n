@@ -139,21 +139,21 @@ public class Swing18n {
                     }
                 }.recurse(outerFile);
             } else {
-                final JarFile jarFile;
                 try {
-                    jarFile = new JarFile(outerFile);
+                    final JarFile jarFile = new JarFile(outerFile);
+                    final Enumeration<JarEntry> enumeration = jarFile.entries();
+                    while (enumeration.hasMoreElements()) {
+                        final JarEntry entry = enumeration.nextElement();
+                        if (entry.getName().endsWith(".properties") && entry.getName().startsWith(packageName.replaceAll("/", ".")))
+                            try {
+                                classes.add(Class.forName(entry.getName().substring(0, entry.getName().length() - ".properties".length())));
+                            } catch (ClassNotFoundException e) {
+                                throw new RuntimeException(e);
+                            }
+                    }
                 } catch (IOException e) {
-                    throw new RuntimeException(e);
-                }
-                final Enumeration<JarEntry> enumeration = jarFile.entries();
-                while (enumeration.hasMoreElements()) {
-                    final JarEntry entry = enumeration.nextElement();
-                    if (entry.getName().endsWith(".properties") && entry.getName().startsWith(packageName.replaceAll("/", ".")))
-                        try {
-                            classes.add(Class.forName(entry.getName().substring(0, entry.getName().length() - ".properties".length())));
-                        } catch (ClassNotFoundException e) {
-                            throw new RuntimeException(e);
-                        }
+                    System.err.println(outerFile);
+                    e.printStackTrace();
                 }
             }
         }
