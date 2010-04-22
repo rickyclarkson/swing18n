@@ -148,7 +148,7 @@ public class Swing18n {
                             try {
                                 classes.add(Class.forName(entry.getName().substring(0, entry.getName().length() - ".properties".length())));
                             } catch (ClassNotFoundException e) {
-                                throw new RuntimeException(e);
+                                e.printStackTrace();
                             }
                     }
                 } catch (IOException e) {
