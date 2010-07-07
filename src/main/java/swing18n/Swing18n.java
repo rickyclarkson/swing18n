@@ -132,6 +132,7 @@ public class Swing18n {
                                         try {
                                             classes.add(Class.forName(pathMinusAbsoluteParts.replaceAll(Pattern.quote(File.separator), ".")));
                                         } catch (ClassNotFoundException e) {
+                                            e.printStackTrace();
                                         }
                                     }
                                 }
@@ -144,9 +145,9 @@ public class Swing18n {
                     final Enumeration<JarEntry> enumeration = jarFile.entries();
                     while (enumeration.hasMoreElements()) {
                         final JarEntry entry = enumeration.nextElement();
-                        if (entry.getName().endsWith(".properties") && entry.getName().startsWith(packageName.replaceAll("/", ".")))
+                        if (entry.getName().endsWith(".properties") && entry.getName().replaceAll("/", ".").startsWith(packageName))
                             try {
-                                classes.add(Class.forName(entry.getName().substring(0, entry.getName().length() - ".properties".length())));
+                                classes.add(Class.forName(entry.getName().replaceAll("/", ".").substring(0, entry.getName().length() - ".properties".length())));
                             } catch (ClassNotFoundException e) {
                                 e.printStackTrace();
                             }
