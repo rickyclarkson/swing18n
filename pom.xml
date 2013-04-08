@@ -6,8 +6,8 @@
     <name>swing18n</name>
     <version>1.4-SNAPSHOT</version>
     <scm>
-        <connection>scm:git:git://github.com/rickyclarkson/swing18n.git</connection>
-        <developerConnection>scm:git:git://github.com/rickyclarkson/swing18n.git</developerConnection>
+        <connection>scm:git:ssh://git@github.com/rickyclarkson/swing18n.git</connection>
+        <developerConnection>scm:git:ssh://git@github.com/rickyclarkson/swing18n.git</developerConnection>
     </scm>
     <build>
         <plugins>
