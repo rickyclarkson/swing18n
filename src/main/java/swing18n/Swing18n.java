@@ -83,7 +83,7 @@ public class Swing18n {
                     field.setBackground(color);
                     color = color.equals(color1) ? color2 : color1;
                     panel.add(field);
-                    edits.put(clazz.getName() + ' ' + key, field);
+                    edits.put(clazz.getName() + ',' + key + ',' + english.getProperty(key.toString()), field);
                 }
         }
         final JButton copyToClipboard = new JButton(done);
@@ -93,11 +93,10 @@ public class Swing18n {
             @Override
             public void actionPerformed(ActionEvent event) {
                 final StringBuilder builder = new StringBuilder();
-                builder.append(locale.getDisplayLanguage()).append(" (").append(locale.getLanguage()).append(")\n");
+                builder.append("Class,key,english,").append(locale.getDisplayLanguage()).append(" (").append(locale.getLanguage()).append(")\n");
                 for (Entry<String, JTextField> entry: edits.entrySet()) {
                     final String value = entry.getValue().getText();
-                    if (!value.isEmpty())
-                        builder.append(entry.getKey()).append(' ').append(value).append('\n');
+                    builder.append(entry.getKey()).append(',').append(value).append('\n');
                 }
                 Toolkit.getDefaultToolkit().getSystemClipboard().setContents(new StringSelection(builder.toString()), null);
                 JOptionPane.showMessageDialog(frame, String.format(theTranslationsHaveBeenCopiedToTheClipboardPleaseEmailToXX, email));
